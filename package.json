@@ -7,8 +7,12 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "bin": "dist/server.js",
-  "files": ["dist"],
+  "bin": {
+    "godot-wsl-lsp": "dist/server.js"
+  },
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "json-rpc-2.0": "^1.7.0",
     "ts-lsp-client": "^1.0.1"
