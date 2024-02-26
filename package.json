@@ -4,10 +4,11 @@
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
-  "bin": "dist/server.js",
   "engines": {
     "node": ">=20.0.0"
   },
+  "bin": "dist/server.js",
+  "files": ["dist"],
   "dependencies": {
     "json-rpc-2.0": "^1.7.0",
     "ts-lsp-client": "^1.0.1"
@@ -23,7 +24,7 @@
     "typescript": "^5.3.3"
   },
   "scripts": {
-    "compile": "tsc -b",
+    "build": "tsc -b",
     "watch": "tsc -b -w",
     "lint": "eslint . --ext .ts,.tsx"
   }
