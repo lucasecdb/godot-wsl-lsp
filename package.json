@@ -1,5 +1,5 @@
 {
-  "name": "gdscript-wsl-lsp",
+  "name": "godot-wsl-lsp",
   "description": "Simple LSP server that converts WSL and Windows paths to Godot LSP",
   "version": "1.0.0",
   "type": "module",
