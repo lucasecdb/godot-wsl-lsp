@@ -26,6 +26,20 @@ const rpcClient = new JSONRPCClient(async (rpcRequest) => {
 const stdinStream = JSONRPCTransform.createStream(process.stdin);
 const socketStream = JSONRPCTransform.createStream(clientSocket);
 
+function log(message: string) {
+  const response = {
+    method: "window/logMessage",
+    params: {
+      type: 5,
+      message,
+    },
+  };
+
+  const str = JSON.stringify(response);
+
+  process.stdout.write(`Content-Length: ${str.length}\r\n\r\n${str}`);
+}
+
 stdinStream.on("data", async (request: string) => {
   const rpcMessage = JSON.parse(request);
 
@@ -52,6 +66,8 @@ stdinStream.on("data", async (request: string) => {
     rpcMessage.params,
   );
 
+  log(`Received request ${request}`);
+
   rpcClient.requestAdvanced(rpcRequest).then((result) => {
     if (Array.isArray(result) && result.length === 0) {
       return;
@@ -75,6 +91,8 @@ stdinStream.on("data", async (request: string) => {
         ));
     }).then(() => {
       const resultStr = JSON.stringify(result);
+
+      log(`Responding request ${resultStr}`);
 
       process.stdout.write(
         `Content-Length: ${resultStr.length}\r\n\r\n${resultStr}`,
