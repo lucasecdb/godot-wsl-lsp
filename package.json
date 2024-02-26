@@ -8,7 +8,7 @@
     "node": ">=20.0.0"
   },
   "bin": {
-    "godot-wsl-lsp": "dist/server.js"
+    "godot-wsl-lsp": "bin/godot-wsl-lsp"
   },
   "files": [
     "dist"
