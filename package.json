@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
+  "bin": "dist/server.js",
   "engines": {
     "node": ">=20.0.0"
   },
