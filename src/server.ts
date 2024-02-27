@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import * as path from "node:path";
 import { JSONRPCTransform } from "ts-lsp-client";
 import { JSONRPCClient, createJSONRPCRequest } from "json-rpc-2.0";
