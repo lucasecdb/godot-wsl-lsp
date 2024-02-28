@@ -8,6 +8,7 @@ import {
   convertWindowsToWslPath,
   convertWslToWindowsPath,
 } from "./wsl-path.js";
+import { logger } from "./logger.js";
 
 const FILE_URI_IDENTIFIER = "file://";
 
@@ -50,6 +51,8 @@ stdinStream.on("data", async (request: string) => {
     rpcMessage.params,
   );
 
+  logger.debug(`Sending request to server ${JSON.stringify(rpcRequest)}`);
+
   rpcClient.requestAdvanced(rpcRequest).then((result) => {
     if (Array.isArray(result) && result.length === 0) {
       return;
@@ -82,6 +85,8 @@ stdinStream.on("data", async (request: string) => {
 });
 
 socketStream.on("data", (result: string) => {
+  logger.debug(`Received server response ${JSON.stringify(result)}`);
+
   const rpcResult = JSON.parse(result);
 
   rpcClient.receive(rpcResult);
