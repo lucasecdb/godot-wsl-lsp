@@ -1,4 +1,5 @@
 import * as path from "node:path";
+import { Writable } from "node:stream";
 import { JSONRPCTransform } from "ts-lsp-client";
 import { JSONRPCClient, createJSONRPCRequest } from "json-rpc-2.0";
 
@@ -14,12 +15,14 @@ const FILE_URI_IDENTIFIER = "file://";
 
 const clientSocket = await createLspSocket();
 
-const rpcClient = new JSONRPCClient(async (rpcRequest) => {
-  const requestStr = JSON.stringify(rpcRequest);
+function writeToStream(stream: Writable, request: object) {
+  const requestStr = JSON.stringify(request);
 
-  clientSocket.write(
-    `Content-Length: ${requestStr.length}\r\n\r\n${requestStr}`,
-  );
+  stream.write(`Content-Length: ${requestStr.length}\r\n\r\n${requestStr}`);
+}
+
+const rpcClient = new JSONRPCClient(async (rpcRequest) => {
+  writeToStream(clientSocket, rpcRequest);
 });
 
 const stdinStream = JSONRPCTransform.createStream(process.stdin);
@@ -58,29 +61,7 @@ stdinStream.on("data", async (request: string) => {
       return;
     }
 
-    return traverseObject(result.result, async (obj, key) => {
-      const value = Array.isArray(obj) ? obj[Number(key)] : obj[key];
-
-      if (typeof value !== "string") {
-        return;
-      }
-
-      if (!value.startsWith(FILE_URI_IDENTIFIER)) {
-        return;
-      }
-
-      (obj as Record<string, unknown>)[key] =
-        FILE_URI_IDENTIFIER +
-        (await convertWindowsToWslPath(
-          value.slice((FILE_URI_IDENTIFIER + path.posix.sep).length),
-        ));
-    }).then(() => {
-      const resultStr = JSON.stringify(result);
-
-      process.stdout.write(
-        `Content-Length: ${resultStr.length}\r\n\r\n${resultStr}`,
-      );
-    });
+    writeToStream(process.stdout, result);
   });
 });
 
@@ -89,5 +70,27 @@ socketStream.on("data", (result: string) => {
 
   const rpcResult = JSON.parse(result);
 
-  rpcClient.receive(rpcResult);
+  traverseObject(rpcResult, async (obj, key) => {
+    const value = Array.isArray(obj) ? obj[Number(key)] : obj[key];
+
+    if (typeof value !== "string") {
+      return;
+    }
+
+    if (!value.startsWith(FILE_URI_IDENTIFIER)) {
+      return;
+    }
+
+    (obj as Record<string, unknown>)[key] =
+      FILE_URI_IDENTIFIER +
+      (await convertWindowsToWslPath(
+        value.slice((FILE_URI_IDENTIFIER + path.posix.sep).length),
+      ));
+  }).then(() => {
+    if (rpcResult.id) {
+      rpcClient.receive(rpcResult);
+    } else {
+      writeToStream(process.stdout, rpcResult);
+    }
+  });
 });
