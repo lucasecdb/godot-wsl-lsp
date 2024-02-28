@@ -1,4 +1,4 @@
-type JsonObject = Record<string, unknown> | Array<unknown>;
+export type JsonObject = Record<string, unknown> | Array<unknown>;
 
 export async function traverseObject(
   obj: JsonObject,
