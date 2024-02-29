@@ -4,8 +4,8 @@ import { JSONRPCClient, createJSONRPCRequest } from "json-rpc-2.0";
 
 import { logger } from "./logger.js";
 import {
-  mutateRpcForLinux,
-  mutateRpcForWindows,
+  transformRpcForLinux,
+  transformRpcForWindows,
 } from "./rpc-message-transformer.js";
 
 export class Server {
@@ -29,9 +29,9 @@ export class Server {
 
   listen() {
     this.inputStream.on("data", async (request: string) => {
-      const rpcMessage = JSON.parse(request);
-
-      await mutateRpcForWindows(rpcMessage);
+      const rpcMessage = (await transformRpcForWindows(
+        JSON.parse(request),
+      )) as { id: string; method: string; params: unknown };
 
       const rpcRequest = createJSONRPCRequest(
         rpcMessage.id,
@@ -47,9 +47,7 @@ export class Server {
     this.originStream.on("data", async (result: string) => {
       logger.debug(`Received server response ${result}`);
 
-      const rpcResult = JSON.parse(result);
-
-      await mutateRpcForLinux(rpcResult);
+      const rpcResult = await transformRpcForLinux(JSON.parse(result));
 
       if (Array.isArray(result) && result.length === 0) {
         return;

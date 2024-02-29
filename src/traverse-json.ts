@@ -1,31 +1,34 @@
 export type JsonObject = Record<string, unknown> | Array<unknown>;
 
-export async function traverseObject(
-  obj: JsonObject,
-  callback: (obj: JsonObject, key: string) => void | Promise<void>,
+export async function transformObjectKeyAndValue(
+  root: JsonObject,
+  transformKey: (key: string) => Promise<string> | string,
+  transformValue: (value: unknown | null) => Promise<unknown> | unknown,
 ) {
-  const stack: Array<{
-    obj: JsonObject;
-    path: string[];
-  }> = [{ obj, path: [] }];
+  async function traverse(obj: JsonObject): Promise<JsonObject> {
+    if (Array.isArray(obj)) {
+      return await Promise.all(
+        obj.map(async (value) =>
+          typeof value !== "object" || value == null
+            ? await transformValue(value)
+            : await traverse(value as JsonObject),
+        ),
+      );
+    } else {
+      const entries = Object.entries(obj);
 
-  while (stack.length) {
-    const { obj: currentObj, path } = stack.pop()!;
-
-    for (const key in currentObj) {
-      const newPath = [...path, key];
-      const value = Array.isArray(currentObj)
-        ? currentObj[Number(key)]
-        : currentObj[key];
-
-      if (typeof value === "object" && value !== null) {
-        stack.push({
-          obj: value as JsonObject,
-          path: newPath,
-        });
-      } else {
-        await callback(currentObj, key);
-      }
+      return Object.fromEntries(
+        await Promise.all(
+          entries.map(async ([key, value]) => [
+            await transformKey(key),
+            typeof value !== "object" || value == null
+              ? await transformValue(value)
+              : await traverse(value as JsonObject),
+          ]),
+        ),
+      );
     }
   }
+
+  return await traverse(root);
 }

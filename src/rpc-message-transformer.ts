@@ -1,6 +1,9 @@
 import * as path from "node:path";
 
-import { traverseObject, type JsonObject } from "./traverse-json.js";
+import {
+  type JsonObject,
+  transformObjectKeyAndValue,
+} from "./traverse-json.js";
 import {
   convertWindowsToWslPath,
   convertWslToWindowsPath,
@@ -8,41 +11,51 @@ import {
 
 const FILE_URI_IDENTIFIER = "file://";
 
-export async function mutateRpcForWindows(source: JsonObject) {
-  await traverseObject(source, async (obj, key) => {
-    const value = Array.isArray(obj) ? obj[Number(key)] : obj[key];
+async function transformPathsForWindows<T>(value: T) {
+  if (typeof value !== "string") {
+    return value;
+  }
 
-    if (typeof value !== "string") {
-      return;
-    }
+  if (!value.startsWith(FILE_URI_IDENTIFIER)) {
+    return value;
+  }
 
-    if (!value.startsWith(FILE_URI_IDENTIFIER)) {
-      return;
-    }
-
-    (obj as Record<string, unknown>)[key] =
-      FILE_URI_IDENTIFIER +
-      path.posix.sep +
-      (await convertWslToWindowsPath(value.slice(FILE_URI_IDENTIFIER.length)));
-  });
+  return (
+    FILE_URI_IDENTIFIER +
+    path.posix.sep +
+    (await convertWslToWindowsPath(value.slice(FILE_URI_IDENTIFIER.length)))
+  );
 }
 
-export async function mutateRpcForLinux(source: JsonObject) {
-  await traverseObject(source, async (obj, key) => {
-    const value = Array.isArray(obj) ? obj[Number(key)] : obj[key];
+export async function transformRpcForWindows(source: JsonObject) {
+  return await transformObjectKeyAndValue(
+    source,
+    transformPathsForWindows,
+    transformPathsForWindows,
+  );
+}
 
-    if (typeof value !== "string") {
-      return;
-    }
+async function transformPathsForLinux<T>(value: T) {
+  if (typeof value !== "string") {
+    return value;
+  }
 
-    if (!value.startsWith(FILE_URI_IDENTIFIER)) {
-      return;
-    }
+  if (!value.startsWith(FILE_URI_IDENTIFIER)) {
+    return value;
+  }
 
-    (obj as Record<string, unknown>)[key] =
-      FILE_URI_IDENTIFIER +
-      (await convertWindowsToWslPath(
-        value.slice((FILE_URI_IDENTIFIER + path.posix.sep).length),
-      ));
-  });
+  return (
+    FILE_URI_IDENTIFIER +
+    (await convertWindowsToWslPath(
+      value.slice((FILE_URI_IDENTIFIER + path.posix.sep).length),
+    ))
+  );
+}
+
+export async function transformRpcForLinux(source: JsonObject) {
+  return await transformObjectKeyAndValue(
+    source,
+    transformPathsForLinux,
+    transformPathsForLinux,
+  );
 }
