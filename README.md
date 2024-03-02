@@ -4,6 +4,8 @@ Simple LSP server that sits between Neovim instance on WSL and the Godot LSP ser
 
 This server's only purpose is to convert the Windows and WSL path back and forth, to have a seamless experience editing GDScript files on Neovim running inside WSL (while Godot is still running on Windows).
 
+# Setup
+
 You can find more information on the entire setup process in [this gist](https://gist.github.com/lucasecdb/2baf6d328a10d7fea9ec085d868923a0).
 
 The updated configuration from the previous gist using this server would be:
@@ -28,7 +30,7 @@ vim.lsp.start({
 })
 ```
 
-# Setup using `neovim/nvim-lspconfig`
+## Setup using `neovim/nvim-lspconfig`
 
 If you're using neovim's official `nvim-lspconfig`, you can omit setting up the lsp server using the naked `vim.lsp` API and `ftplugin`. In this case, the following configuration is recommended:
 
