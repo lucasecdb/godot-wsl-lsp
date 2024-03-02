@@ -6,7 +6,12 @@ import { gotCliFlag } from "./cli-flags.js";
 
 export async function getWindowsHostAddress() {
   const useMirroredNetworking = gotCliFlag("--useMirroredNetworking");
-  const host = useMirroredNetworking ? "localhost" : os.hostname() + ".local";
+
+  if (useMirroredNetworking) {
+    return "127.0.0.1";
+  }
+
+  const host = os.hostname() + ".local";
 
   const address = (
     (await dns.resolveAny(host)).find(
