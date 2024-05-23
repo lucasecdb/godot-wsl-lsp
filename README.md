@@ -49,3 +49,11 @@ If you're using WSL's 'mirrored' networking mode (supported since [WSL 2.0.0](ht
 ```lua
 cmd = { "godot-wsl-lsp", "--useMirroredNetworking" }
 ```
+
+# Manually specifying what host to connect
+
+If you prefer, you can also specify the host ip address you wish to connect manually:
+
+```lua
+cmd = { "godot-wsl-lsp", "--host", "1.2.3.4" }
+```
