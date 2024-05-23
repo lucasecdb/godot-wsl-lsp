@@ -3,11 +3,12 @@ import * as dns from "node:dns/promises";
 import { AnyARecord } from "node:dns";
 import * as net from "node:net";
 import { getCliOption, gotCliFlag } from "./cli-flags.js";
+import { logger } from "./logger.js";
 
 export async function getWindowsHostAddress() {
   const manualHost = getCliOption("host");
   if (manualHost) {
-    console.log(`Using manually specified host: ${manualHost}`);
+    logger.debug(`Using manually specified host: ${manualHost}`);
     return manualHost;
   }
 
