@@ -1,8 +1,21 @@
-// Note: Consider using for example yargs if adding more flags (especially
-//       ones that should contain values of type other than boolean).
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 
-type CliFlag = "--useMirroredNetworking";
+const argv = yargs(hideBin(process.argv))
+  .option("useMirroredNetworking", {
+    type: "boolean",
+    description: "Use mirrored networking",
+  })
+  .option("host", {
+    type: "string",
+    description: "Manually specify the host address",
+  })
+  .help().argv as { [key: string]: any }; // Explicitly typing argv
 
-export function gotCliFlag(flag: CliFlag): boolean {
-  return process.argv.slice(2).includes(flag);
+export function gotCliFlag(flag: string): boolean {
+  return Boolean(argv[flag]);
+}
+
+export function getCliOption(option: string): string {
+  return argv[option];
 }
