@@ -1,7 +1,7 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-const argv = yargs(hideBin(process.argv))
+const argv = (await yargs(hideBin(process.argv))
   .option("useMirroredNetworking", {
     type: "boolean",
     description: "Use mirrored networking",
@@ -10,12 +10,12 @@ const argv = yargs(hideBin(process.argv))
     type: "string",
     description: "Manually specify the host address",
   })
-  .help().argv as { [key: string]: any }; // Explicitly typing argv
+  .help().argv) satisfies { [key: string]: any };
 
 export function gotCliFlag(flag: string): boolean {
   return Boolean(argv[flag]);
 }
 
 export function getCliOption(option: string): string {
-  return argv[option];
+  return String(argv[option]);
 }
