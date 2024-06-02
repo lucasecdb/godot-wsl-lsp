@@ -1,7 +1,7 @@
 {
   "name": "godot-wsl-lsp",
   "description": "Simple LSP server that converts WSL and Windows paths to Godot LSP",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "type": "module",
   "license": "MIT",
   "engines": {
