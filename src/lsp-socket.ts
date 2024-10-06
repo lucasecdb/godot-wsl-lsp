@@ -1,8 +1,7 @@
 import * as os from "node:os";
 import * as dns from "node:dns/promises";
-import { AnyARecord } from "node:dns";
 import * as net from "node:net";
-import { getCliOption, gotCliFlag } from "./cli-flags.js";
+import { getCliOption } from "./cli-flags.js";
 import { logger } from "./logger.js";
 
 export async function getWindowsHostAddress() {
@@ -12,14 +11,10 @@ export async function getWindowsHostAddress() {
     return manualHost;
   }
 
-  const useMirroredNetworking = gotCliFlag("useMirroredNetworking");
+  const useMirroredNetworking = getCliOption("useMirroredNetworking");
   const host = useMirroredNetworking ? "localhost" : os.hostname() + ".local";
 
-  const address = (
-    (await dns.resolveAny(host)).find(
-      (entry) => entry.type === "A",
-    ) as AnyARecord
-  ).address;
+  const address = (await dns.lookup(host)).address;
 
   return address;
 }
