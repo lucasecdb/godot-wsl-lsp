@@ -1,6 +1,6 @@
 import * as cp from "node:child_process";
 
-const WSLPATH_BIN = "/usr/bin/wslpath";
+const WSLPATH_BIN = "wslpath";
 
 export async function convertWindowsToWslPath(
   filePath: string,
