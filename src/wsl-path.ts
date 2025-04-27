@@ -1,7 +1,7 @@
 import * as path from "node:path";
 import { promisify } from "node:util";
 import * as cp from "node:child_process";
-import { getCliOption } from "./cli-flags";
+import { getCliOption } from "./cli-flags.js";
 
 const WSLPATH_BIN = "wslpath";
 
