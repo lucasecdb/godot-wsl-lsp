@@ -1,13 +1,41 @@
 import { createLogger } from "./logger.js";
 import { LspSocket } from "./lsp-socket.js";
+import { ProgressReporter } from "./progress-reporter.js";
 import { Server } from "./server.js";
 
-const logger = createLogger(process.stdout);
+async function main() {
+  const logger = createLogger(process.stdout);
 
-const lspSocket = new LspSocket(logger);
+  const lspSocket = new LspSocket(logger);
 
-const clientSocket = await lspSocket.createLspSocket();
+  const progressReporter = new ProgressReporter(process.stdout);
 
-const server = new Server(logger, clientSocket, process.stdin, process.stdout);
+  const connectionReporter = progressReporter.workBegin({
+    title: "Connecting to Godot",
+    cancellable: false,
+  });
 
-server.listen();
+  const clientSocket = await lspSocket.createLspSocket(
+    (message, percentage) => {
+      connectionReporter.reportWork({
+        message,
+        percentage,
+      });
+    },
+  );
+
+  connectionReporter.workEnd({
+    message: "Success",
+  });
+
+  const server = new Server(
+    logger,
+    clientSocket,
+    process.stdin,
+    process.stdout,
+  );
+
+  server.listen();
+}
+
+await main();

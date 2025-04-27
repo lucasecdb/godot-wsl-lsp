@@ -17,11 +17,11 @@ export class LspSocket {
     const useMirroredNetworking = getCliOption("useMirroredNetworking");
     const host = useMirroredNetworking ? "localhost" : os.hostname() + ".local";
 
-    this.logger.debug("Searching windows host address");
+    this.logger.info("Searching windows host address");
 
     const address = (await dns.lookup(host)).address;
 
-    this.logger.debug(`Found address ${address}`);
+    this.logger.info(`Found address ${address}`);
 
     return address;
   }
@@ -32,15 +32,19 @@ export class LspSocket {
     return port;
   }
 
-  public async createLspSocket() {
+  public async createLspSocket(
+    notifyProgress: (message: string, percentage?: number) => void = () => {},
+  ) {
     const port = this.getGodotPort();
+
+    notifyProgress("Searching Windows host address");
+
     const address = await this.getWindowsHostAddress();
 
-    this.logger.debug("Connecting to Godot LSP");
+    notifyProgress("Establishing socket connection");
 
     const clientSocket = await new Promise<net.Socket>((resolve) => {
       const socket = net.createConnection(port, address, () => {
-        this.logger.debug("Connected");
         resolve(socket);
       });
     });

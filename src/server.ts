@@ -45,15 +45,10 @@ export class Server {
         rpcMessage.params,
       );
 
-      this.logger.debug(
-        `Sending request to server ${JSON.stringify(rpcRequest)}`,
-      );
       this.originInputStream.send(rpcRequest);
     });
 
     this.originOutputStream.on("data", async (result: string) => {
-      this.logger.debug(`Received server response ${result}`);
-
       const rpcResult = await transformRpcForLinux(JSON.parse(result));
 
       if (Array.isArray(result) && result.length === 0) {
