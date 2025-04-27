@@ -34,9 +34,11 @@
   "scripts": {
     "build": "npm run build:clean && npm run build:ts",
     "build:clean": "rimraf dist",
-    "build:ts": "tsc -b",
-    "watch": "tsc -b -w",
-    "lint": "eslint . --ext .ts,.tsx",
+    "build:ts": "tsc -p tsconfig.build.json",
+    "watch": "tsc -p tsconfig.build.json -w",
+    "lint": "npm run lint:ts && npm run lint:eslint",
+    "lint:ts": "tsc --noEmit",
+    "lint:eslint": "eslint . --ext .ts,.tsx",
     "prepublishOnly": "npm run build",
     "test": "vitest"
   }

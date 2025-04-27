@@ -7,10 +7,10 @@
     "skipLibCheck": true,
     "sourceMap": false,
     "strict": true,
-    "allowSyntheticDefaultImports": true,
-    "types": ["node", "vitest/globals"],
-    "noEmit": true
+    "outDir": "dist",
+    "rootDir": "src",
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["./**/*.ts"],
-  "exclude": ["node_modules", "dist", "bin"]
+  "include": ["src"],
+  "exclude": ["**/*.test.*"]
 }
