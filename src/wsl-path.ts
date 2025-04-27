@@ -1,24 +1,20 @@
+import { promisify } from "node:util";
 import * as cp from "node:child_process";
 
 const WSLPATH_BIN = "wslpath";
 
-export async function convertWindowsToWslPath(
-  filePath: string,
-  options: string[] = [],
-) {
-  const child = cp.execFile(WSLPATH_BIN, [...options, filePath]);
+const execFile = promisify(cp.execFile);
 
-  let buffer = "";
+async function wslpath(args: string[]) {
+  const { stdout } = await execFile(WSLPATH_BIN, args);
 
-  child.stdout?.on("data", (data) => {
-    buffer += data;
-  });
-
-  await new Promise<void>((resolve) => child.on("exit", () => resolve()));
-
-  return buffer.trim();
+  return stdout.trim();
 }
 
-export async function convertWslToWindowsPath(filePath: string) {
-  return await convertWindowsToWslPath(filePath, ["-m"]);
+export function convertWindowsToWslPath(filePath: string) {
+  return wslpath([filePath]);
+}
+
+export function convertWslToWindowsPath(filePath: string) {
+  return wslpath(["-m", filePath]);
 }
