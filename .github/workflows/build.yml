@@ -41,4 +41,4 @@ jobs:
       - run: npm run build
 
   e2e:
-    uses: ./e2e.yaml
+    uses: ./.github/workflows/e2e.yaml
