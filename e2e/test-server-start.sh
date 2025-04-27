@@ -17,7 +17,7 @@ trap cleanup EXIT
 echo -e "${YELLOW}Starting godot-wsl-lsp...${NC}"
 
 # Start up server
-godot-wsl-lsp >"$output_file" 2>&1 &
+godot-wsl-lsp --host 127.0.0.1 >"$output_file" 2>&1 &
 godot_pid=$!
 
 success_detected=0

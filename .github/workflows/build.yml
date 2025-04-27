@@ -39,3 +39,6 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
       - run: npm run build
+
+  e2e:
+    uses: ./e2e.yaml
