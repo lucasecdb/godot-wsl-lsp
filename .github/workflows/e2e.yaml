@@ -16,4 +16,12 @@ jobs:
         run: |
           realpath ./bin/ >> "$GITHUB_PATH"
       - run: |
-          ./e2e/test-server-start.sh
+          # Start dummy server
+          python3 -m http.server 8080 > /dev/null 2>&1 &
+          python_pid=$!
+
+          # Run test
+          GDScript_Port=8080 ./e2e/test-server-start.sh
+
+          # Stop dummy server
+          kill -9 $python_pid 2> /dev/null
