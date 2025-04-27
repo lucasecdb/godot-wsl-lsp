@@ -13,7 +13,6 @@ async function main() {
   const connectionReporter = progressReporter.workBegin({
     title: "Connecting to Godot",
     cancellable: false,
-    percentage: 0,
   });
 
   const clientSocket = await lspSocket.createLspSocket(
