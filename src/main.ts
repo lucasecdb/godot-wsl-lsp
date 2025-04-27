@@ -1,15 +1,13 @@
-import {
-  createLspSocket,
-  getWindowsHostAddress,
-  getGodotPort,
-} from "./lsp-socket.js";
+import { createLogger } from "./logger.js";
+import { LspSocket } from "./lsp-socket.js";
 import { Server } from "./server.js";
 
-const windowsAddress = await getWindowsHostAddress();
-const port = getGodotPort();
+const logger = createLogger(process.stdout);
 
-const clientSocket = await createLspSocket(windowsAddress, port);
+const lspSocket = new LspSocket(logger);
 
-const server = new Server(clientSocket, process.stdin, process.stdout);
+const clientSocket = await lspSocket.createLspSocket();
+
+const server = new Server(logger, clientSocket, process.stdin, process.stdout);
 
 server.listen();

@@ -1,3 +1,6 @@
+import { Writable } from "node:stream";
+import { writeMessage } from "./rpc";
+
 const enum LoggerLevel {
   /**
    * An error message.
@@ -24,28 +27,40 @@ const enum LoggerLevel {
   Debug = 5,
 }
 
-function log(level: LoggerLevel, message: string) {
-  const response = {
-    method: "window/logMessage",
-    params: {
-      type: level.valueOf(),
-      message,
-    },
+export interface Logger {
+  error(message: string): void;
+  warn(message: string): void;
+  info(message: string): void;
+  log(message: string): void;
+  debug(message: string): void;
+}
+
+export function createLogger(outputStream: Writable): Logger {
+  function log(level: LoggerLevel, message: string) {
+    const response = {
+      method: "window/logMessage",
+      params: {
+        type: level.valueOf(),
+        message: JSON.stringify(message),
+      },
+    };
+
+    const str = JSON.stringify(response);
+
+    writeMessage(outputStream, str);
+  }
+
+  function createLog(level: LoggerLevel) {
+    return (message: string) => log(level, message);
+  }
+
+  const logger: Logger = {
+    error: createLog(LoggerLevel.Error),
+    warn: createLog(LoggerLevel.Warning),
+    info: createLog(LoggerLevel.Info),
+    log: createLog(LoggerLevel.Log),
+    debug: createLog(LoggerLevel.Debug),
   };
 
-  const str = JSON.stringify(response);
-
-  process.stdout.write(`Content-Length: ${str.length}\r\n\r\n${str}`);
+  return logger;
 }
-
-function createLog(level: LoggerLevel) {
-  return (message: string) => log(level, message);
-}
-
-export const logger = {
-  error: createLog(LoggerLevel.Error),
-  warn: createLog(LoggerLevel.Warning),
-  info: createLog(LoggerLevel.Info),
-  log: createLog(LoggerLevel.Log),
-  debug: createLog(LoggerLevel.Debug),
-};

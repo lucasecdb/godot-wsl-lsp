@@ -2,28 +2,34 @@ import { Writable, Duplex, Readable } from "node:stream";
 import { JSONRPCTransform } from "ts-lsp-client";
 import { JSONRPCClient, createJSONRPCRequest } from "json-rpc-2.0";
 
-import { logger } from "./logger.js";
 import {
   transformRpcForLinux,
   transformRpcForWindows,
 } from "./rpc-message-transformer.js";
+import { writeMessage } from "./rpc.js";
+import { Logger } from "./logger.js";
 
 export class Server {
-  private rpcClient: JSONRPCClient;
+  private originInputStream: JSONRPCClient;
+  private outputStream: JSONRPCClient;
 
-  private originStream: JSONRPCTransform;
+  private originOutputStream: JSONRPCTransform;
   private inputStream: JSONRPCTransform;
 
   constructor(
+    private logger: Logger,
     private origin: Duplex,
     private input: Readable,
     private output: Writable,
   ) {
-    this.rpcClient = new JSONRPCClient(async (rpcRequest) => {
+    this.originInputStream = new JSONRPCClient(async (rpcRequest) => {
       this.writeToStream(this.origin, rpcRequest);
     });
+    this.outputStream = new JSONRPCClient(async (rpcResponse) => {
+      this.writeToStream(this.output, rpcResponse);
+    });
 
-    this.originStream = JSONRPCTransform.createStream(this.origin);
+    this.originOutputStream = JSONRPCTransform.createStream(this.origin);
     this.inputStream = JSONRPCTransform.createStream(this.input);
   }
 
@@ -39,13 +45,14 @@ export class Server {
         rpcMessage.params,
       );
 
-      logger.debug(`Sending request to server ${JSON.stringify(rpcRequest)}`);
-
-      this.rpcClient.send(rpcRequest);
+      this.logger.debug(
+        `Sending request to server ${JSON.stringify(rpcRequest)}`,
+      );
+      this.originInputStream.send(rpcRequest);
     });
 
-    this.originStream.on("data", async (result: string) => {
-      logger.debug(`Received server response ${result}`);
+    this.originOutputStream.on("data", async (result: string) => {
+      this.logger.debug(`Received server response ${result}`);
 
       const rpcResult = await transformRpcForLinux(JSON.parse(result));
 
@@ -53,13 +60,13 @@ export class Server {
         return;
       }
 
-      this.writeToStream(this.output, rpcResult);
+      this.outputStream.send(rpcResult);
     });
   }
 
   private writeToStream(stream: Writable, request: object) {
     const requestStr = JSON.stringify(request);
 
-    stream.write(`Content-Length: ${requestStr.length}\r\n\r\n${requestStr}`);
+    writeMessage(stream, requestStr);
   }
 }
