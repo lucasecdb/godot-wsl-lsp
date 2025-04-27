@@ -33,15 +33,15 @@ export class LspSocket {
   }
 
   public async createLspSocket(
-    notifyProgress: (message: string, percentage: number) => void = () => {},
+    notifyProgress: (message: string, percentage?: number) => void = () => {},
   ) {
     const port = this.getGodotPort();
 
-    notifyProgress("Searching windows port", 25);
+    notifyProgress("Searching Windows host address");
 
     const address = await this.getWindowsHostAddress();
 
-    notifyProgress("Establishing socket connection", 75);
+    notifyProgress("Establishing socket connection");
 
     const clientSocket = await new Promise<net.Socket>((resolve) => {
       const socket = net.createConnection(port, address, () => {
