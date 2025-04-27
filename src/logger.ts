@@ -41,7 +41,7 @@ export function createLogger(outputStream: Writable): Logger {
       method: "window/logMessage",
       params: {
         type: level.valueOf(),
-        message: JSON.stringify(message),
+        message,
       },
     };
 
