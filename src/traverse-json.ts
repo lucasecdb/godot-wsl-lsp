@@ -7,26 +7,35 @@ export async function transformObjectKeyAndValue(
 ) {
   async function traverse(obj: JsonObject): Promise<JsonObject> {
     if (Array.isArray(obj)) {
-      return await Promise.all(
-        obj.map(async (value) =>
-          typeof value !== "object" || value == null
-            ? await transformValue(value)
-            : await traverse(value as JsonObject),
-        ),
-      );
-    } else {
-      const entries = Object.entries(obj);
+      for (let i = 0; i < obj.length; i++) {
+        const value = obj[i];
 
-      return Object.fromEntries(
-        await Promise.all(
-          entries.map(async ([key, value]) => [
-            await transformKey(key),
-            typeof value !== "object" || value == null
-              ? await transformValue(value)
-              : await traverse(value as JsonObject),
-          ]),
-        ),
-      );
+        if (typeof value !== "object" || value == null) {
+          obj[i] = await transformValue(value);
+        } else {
+          obj[i] = await traverse(value as JsonObject);
+        }
+      }
+
+      return obj;
+    } else {
+      const keys = Object.keys(obj);
+
+      for (const key of keys) {
+        const value = obj[key];
+
+        delete obj[key];
+
+        const newKey = await transformKey(key);
+
+        if (typeof value !== "object" || value == null) {
+          obj[newKey] = await transformValue(value);
+        } else {
+          obj[newKey] = await traverse(value as JsonObject);
+        }
+      }
+
+      return obj;
     }
   }
 
