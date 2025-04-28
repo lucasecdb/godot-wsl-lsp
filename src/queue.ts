@@ -1,12 +1,12 @@
-export class Queue<T> {
-  private queue: Array<T> = [];
+export class Queue<T extends object> {
+  private queue: Array<Promise<T>> = [];
 
-  private currentItem: T | null = null;
+  private currentItem: Promise<T> | null = null;
 
   constructor(private processor: (value: T) => Promise<void>) {}
 
-  public enqueue(value: T) {
-    this.queue.push(value);
+  public enqueue(value: T | Promise<T>) {
+    this.queue.push("then" in value ? value : Promise.resolve(value));
 
     if (this.currentItem == null) {
       this.processNextItem();
@@ -20,12 +20,14 @@ export class Queue<T> {
 
     this.currentItem = this.queue.splice(0, 1)[0];
 
-    this.processor(this.currentItem).then(() => {
-      this.currentItem = null;
+    this.currentItem
+      .then((item) => this.processor(item as T))
+      .then(() => {
+        this.currentItem = null;
 
-      if (this.queue.length > 0) {
-        this.processNextItem();
-      }
-    });
+        if (this.queue.length > 0) {
+          this.processNextItem();
+        }
+      });
   }
 }
