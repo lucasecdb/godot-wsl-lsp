@@ -57,3 +57,11 @@ If you prefer, you can also specify the host ip address you wish to connect manu
 ```lua
 cmd = { "godot-wsl-lsp", "--host", "1.2.3.4" }
 ```
+
+# Improving path conversion performance
+
+If you are experiencing long latency between nvim and the lsp, the `--experimentalFastPathConversion` flag may improve performance:
+
+```lua
+cmd = { "godot-wsl-lsp", "--useMirroredNetworking", "--experimentalFastPathConversion" }
+```
