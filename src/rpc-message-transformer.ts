@@ -44,10 +44,13 @@ async function transformPathsForLinux<T>(value: T) {
     return value;
   }
 
+  // Godot 4.5 may communicate file URIs with percent-encoded characters (i.e."C%3A" instead of "C:")
+  const decodedValue = decodeURIComponent(value);
+
   return (
     FILE_URI_IDENTIFIER +
     (await convertWindowsToWslPath(
-      value.slice((FILE_URI_IDENTIFIER + path.posix.sep).length),
+      decodedValue.slice((FILE_URI_IDENTIFIER + path.posix.sep).length),
     ))
   );
 }
