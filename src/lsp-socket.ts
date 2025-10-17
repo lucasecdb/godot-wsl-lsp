@@ -39,7 +39,15 @@ export class LspSocket {
 
     notifyProgress("Searching Windows host address");
 
-    const address = await this.getWindowsHostAddress();
+    let address: string;
+
+    try {
+      address = await this.getWindowsHostAddress();
+    } catch (err) {
+      this.logger.error("Error fetching windows host address: " + err);
+      notifyProgress("Failed to get Windows host address");
+      process.exit(1);
+    }
 
     notifyProgress("Establishing socket connection");
 

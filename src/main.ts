@@ -11,7 +11,7 @@ async function main() {
   const progressReporter = new ProgressReporter(process.stdout);
 
   const connectionReporter = progressReporter.workBegin({
-    title: "Connecting to Godot",
+    title: "Connect",
     cancellable: false,
   });
 
@@ -25,7 +25,7 @@ async function main() {
   );
 
   connectionReporter.workEnd({
-    message: "Success",
+    message: "Successfully connected to Godot",
   });
 
   const server = new Server(
