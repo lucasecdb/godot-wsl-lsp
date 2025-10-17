@@ -16,13 +16,22 @@ async function transformPathsForWindows<T>(value: T) {
     return value;
   }
 
-  const uri = URI.parse(value);
+  try {
+    const uri = URI.parse(value, true);
 
-  if (uri.scheme !== FILE_URI_SCHEME) {
+    if (uri.scheme !== FILE_URI_SCHEME) {
+      // Only convert file paths
+      return value;
+    }
+
+    return uri
+      .with({ path: await convertWslToWindowsPath(uri.path) })
+      .toString();
+  } catch {
+    // failing to parse the string as an URI indicates that this
+    // is not a file path, and should not be converted.
     return value;
   }
-
-  return uri.with({ path: await convertWslToWindowsPath(uri.path) }).toString();
 }
 
 export async function transformRpcForWindows(source: JsonObject) {
@@ -38,13 +47,24 @@ async function transformPathsForLinux<T>(value: T) {
     return value;
   }
 
-  const uri = URI.parse(value);
+  try {
+    const uri = URI.parse(value, true);
 
-  if (uri.scheme !== FILE_URI_SCHEME) {
+    if (uri.scheme !== FILE_URI_SCHEME) {
+      // Only convert file paths
+      return value;
+    }
+
+    return uri
+      .with({
+        path: await convertWindowsToWslPath(uri.fsPath),
+      })
+      .toString();
+  } catch {
+    // failing to parse the string as an URI indicates that this
+    // is not a file path, and should not be converted.
     return value;
   }
-
-  return uri.with({ path: await convertWindowsToWslPath(uri.path) }).toString();
 }
 
 export async function transformRpcForLinux(source: JsonObject) {
