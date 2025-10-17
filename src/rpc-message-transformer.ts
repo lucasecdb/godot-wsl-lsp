@@ -1,4 +1,4 @@
-import * as path from "node:path";
+import { URI } from "vscode-uri";
 
 import {
   type JsonObject,
@@ -9,22 +9,20 @@ import {
   convertWslToWindowsPath,
 } from "./wsl-path.js";
 
-const FILE_URI_IDENTIFIER = "file://";
+const FILE_URI_SCHEME = "file";
 
 async function transformPathsForWindows<T>(value: T) {
   if (typeof value !== "string") {
     return value;
   }
 
-  if (!value.startsWith(FILE_URI_IDENTIFIER)) {
+  const uri = URI.parse(value);
+
+  if (uri.scheme !== FILE_URI_SCHEME) {
     return value;
   }
 
-  return (
-    FILE_URI_IDENTIFIER +
-    path.posix.sep +
-    (await convertWslToWindowsPath(value.slice(FILE_URI_IDENTIFIER.length)))
-  );
+  return uri.with({ path: await convertWslToWindowsPath(uri.path) }).toString();
 }
 
 export async function transformRpcForWindows(source: JsonObject) {
@@ -40,19 +38,13 @@ async function transformPathsForLinux<T>(value: T) {
     return value;
   }
 
-  if (!value.startsWith(FILE_URI_IDENTIFIER)) {
+  const uri = URI.parse(value);
+
+  if (uri.scheme !== FILE_URI_SCHEME) {
     return value;
   }
 
-  // Godot 4.5 may communicate file URIs with percent-encoded characters (i.e."C%3A" instead of "C:")
-  const decodedValue = decodeURIComponent(value);
-
-  return (
-    FILE_URI_IDENTIFIER +
-    (await convertWindowsToWslPath(
-      decodedValue.slice((FILE_URI_IDENTIFIER + path.posix.sep).length),
-    ))
-  );
+  return uri.with({ path: await convertWindowsToWslPath(uri.path) }).toString();
 }
 
 export async function transformRpcForLinux(source: JsonObject) {
