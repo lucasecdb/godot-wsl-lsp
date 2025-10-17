@@ -18,11 +18,13 @@ export class Server {
   private selfInputStream: JSONRPCTransform;
   private selfOutputStream: JSONRPCClient;
 
-  private inputQueue = new Queue<JsonObject>((value) =>
-    this.processInput(value),
+  private inputQueue = new Queue<JsonObject>(
+    (value) => this.processInput(value),
+    this.logger,
   );
-  private outputQueue = new Queue<JsonObject>((value) =>
-    this.processOutput(value),
+  private outputQueue = new Queue<JsonObject>(
+    (value) => this.processOutput(value),
+    this.logger,
   );
 
   constructor(
