@@ -20,5 +20,3 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
